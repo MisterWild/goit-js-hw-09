@@ -1,38 +1,53 @@
-const CHANGE_COLOR_DELAY = 1000;
-let idInt = null;
+class ChangerColor {
+  constructor({ btnStartEl, btnStopEl, bodyEl }) {
+    this.btnStart = btnStartEl;
+    this.btnStop = btnStopEl;
+    this.color = bodyEl;
+
+    this.onChange = null;
+    this.#btnToggle(this.btnStop);
+  }
+
+  start() {
+    this.#btnToggle(this.btnStart);
+    this.#btnToggle(this.btnStop);
+
+    this.onChange = setInterval(() => {
+      this.color.style.backgroundColor = this.#getRandomHexColor();
+    }, 1000);
+  }
+
+  stop() {
+    this.#btnToggle(this.btnStop);
+    this.#btnToggle(this.btnStart);
+
+    clearInterval(this.onChange);
+  }
+
+  #getRandomHexColor() {
+    let letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  #btnToggle(btn) {
+    btn.disabled = !btn.disabled;
+  }
+}
 
 const refs = {
-    btnStart: document.querySelector('button[data-start]'),
-    btnStop: document.querySelector('button[data-stop]'),
-    body: document.querySelector('body'),
-}
+  btnStartEl: document.querySelector('button[data-start]'),
+  btnStopEl: document.querySelector('button[data-stop]'),
+  bodyEl: document.body,
+};
 
-// refs.btnStop.setAttribute('disabled', true);
-refs.btnStop.disabled = true;
-refs.btnStart.addEventListener('click', onBtnStartChangeColor);
-refs.btnStop.addEventListener('click', onBtnStopChangeColor);
+const changerColor = new ChangerColor(refs);
 
-
-function onBtnStartChangeColor() {
-    refs.btnStart.disabled = true;
-    refs.btnStop.disabled = false;
-    // refs.btnStart.setAttribute('disabled', true);
-    // refs.btnStop.removeAttribute('disabled');
-
-    idInt = setInterval(() => {
-        refs.body.style.backgroundColor = getRandomHexColor()
-    }, CHANGE_COLOR_DELAY);
-}
-
-function onBtnStopChangeColor() {
-    refs.btnStart.disabled = false;
-    refs.btnStop.disabled = true;
-    // refs.btnStart.removeAttribute('disabled');
-    // refs.btnStop.setAttribute('disabled', true);
-
-    clearInterval(idInt);
-}
-
-function getRandomHexColor() {
-    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-}
+refs.btnStartEl.addEventListener(
+  'click',
+  changerColor.start.bind(changerColor)
+);
+refs.btnStopEl.addEventListener('click', changerColor.stop.bind(changerColor));
